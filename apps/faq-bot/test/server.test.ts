@@ -12,7 +12,7 @@ const config = BusinessConfig.parse({
   },
 });
 
-function setup(opts: { maxPerMinute?: number } = {}) {
+function setup(opts: { maxPerMinute?: number; apiToken?: string } = {}) {
   const sent: Array<{ phoneNumberId: string; body: any }> = [];
   const sender: Sender = { send: async (phoneNumberId, body) => void sent.push({ phoneNumberId, body }) };
   const notify = vi.fn(async () => {});
@@ -110,5 +110,42 @@ describe('webhook', () => {
     await post(app, body);
     await settle();
     expect(sent[0]?.body.text.body).toContain('Pode escrever');
+  });
+});
+
+describe('POST /api/reply (canal genérico)', () => {
+  const TOKEN = 'token-bem-longo-1234567890abc';
+  const call = (app: ReturnType<typeof buildServer>, body: unknown, auth?: string) =>
+    app.inject({
+      method: 'POST',
+      url: '/api/reply',
+      headers: { 'content-type': 'application/json', ...(auth ? { authorization: auth } : {}) },
+      payload: JSON.stringify(body),
+    });
+
+  it('não existe sem API_TOKEN', async () => {
+    const { app } = setup();
+    expect((await call(app, { text: 'oi' }, `Bearer ${TOKEN}`)).statusCode).toBe(404);
+  });
+
+  it('exige o token certo', async () => {
+    const { app } = setup({ apiToken: TOKEN });
+    expect((await call(app, { text: 'oi' })).statusCode).toBe(401);
+    expect((await call(app, { text: 'oi' }, 'Bearer errado')).statusCode).toBe(401);
+  });
+
+  it('responde o texto do cliente e rejeita corpo vazio', async () => {
+    const { app } = setup({ apiToken: TOKEN });
+    const ok = await call(app, { text: 'vocês estão abertos?' }, `Bearer ${TOKEN}`);
+    expect(ok.statusCode).toBe(200);
+    expect(ok.json().handoff).toBe(false);
+    expect((await call(app, {}, `Bearer ${TOKEN}`)).statusCode).toBe(400);
+  });
+
+  it('pedido de atendente volta com handoff e avisa o dono', async () => {
+    const { app, notify } = setup({ apiToken: TOKEN });
+    const res = await call(app, { text: 'quero falar com o dono', customerId: 'c1' }, `Bearer ${TOKEN}`);
+    expect(res.json().handoff).toBe(true);
+    expect(notify).toHaveBeenCalled();
   });
 });

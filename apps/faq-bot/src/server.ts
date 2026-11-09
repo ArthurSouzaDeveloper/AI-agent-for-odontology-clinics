@@ -1,3 +1,4 @@
+import { timingSafeEqual } from 'node:crypto';
 import Fastify, { type FastifyInstance } from 'fastify';
 import {
   buildButtonsPayload,
@@ -35,6 +36,8 @@ export interface ServerDeps {
   now?: () => Date;
   /** Máximo de mensagens por cliente por janela, contra abuso e custo de LLM. */
   maxPerMinute?: number;
+  /** Se definido, habilita `POST /api/reply` para plataformas como Typebot ou Leona chamarem o bot por HTTP. */
+  apiToken?: string;
 }
 
 export class MemorySeenStore implements SeenStore {
@@ -84,6 +87,40 @@ export function buildServer(deps: ServerDeps): FastifyInstance {
     rate.set(from, recent);
     return recent.length > limit;
   };
+
+  // Canal genérico: uma plataforma externa (Typebot, Leona, etc.) manda o texto do
+  // cliente e recebe a resposta pronta. Ela cuida do envio ao WhatsApp.
+  if (deps.apiToken) {
+    const expected = Buffer.from(deps.apiToken);
+    app.post('/api/reply', async (req, reply) => {
+      const auth = req.headers.authorization ?? '';
+      const given = Buffer.from(auth.startsWith('Bearer ') ? auth.slice(7) : '');
+      if (given.length !== expected.length || !timingSafeEqual(given, expected)) {
+        return reply.status(401).send({ error: 'unauthorized' });
+      }
+      const body = req.body as { text?: unknown; choiceId?: unknown; customerId?: unknown } | null;
+      const text = typeof body?.text === 'string' ? body.text.slice(0, 1000) : '';
+      if (!text.trim()) return reply.status(400).send({ error: 'text_required' });
+      const key = typeof body?.customerId === 'string' ? body.customerId : req.ip;
+      if (tooMany(key)) return reply.status(429).send({ error: 'rate_limited' });
+
+      const responder = new Responder(await deps.config(), deps.llm);
+      const now = deps.now?.() ?? new Date();
+      const out = await responder.reply(
+        typeof body?.choiceId === 'string' ? { choiceId: body.choiceId, text } : { text },
+        now,
+      );
+      if (out.type === 'handoff') {
+        await deps.notifier.notify({ from: key, reason: out.reason, lastMessage: text });
+      }
+      return {
+        type: out.type,
+        text: out.text,
+        handoff: out.type === 'handoff',
+        ...(out.type === 'buttons' ? { buttons: out.buttons } : {}),
+      };
+    });
+  }
 
   app.post('/webhook', async (req, reply) => {
     const raw = (req as unknown as { rawBody?: Buffer }).rawBody;

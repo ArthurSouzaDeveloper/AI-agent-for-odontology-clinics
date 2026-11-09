@@ -41,6 +41,20 @@ Para o dono mudar algo sem mexer no código, aponte `BUSINESS_CONFIG_PATH` para 
 | `ANTHROPIC_API_KEY` | Opcional. Sem ela o bot funciona sem o passo 5 |
 | `FAQ_MODEL` | Opcional. Padrão `claude-opus-5-5`; `claude-haiku-5-5` é bem mais barato |
 | `BUSINESS_CONFIG_PATH` | Opcional. JSON editável pelo dono |
+| `API_TOKEN` | Opcional (mín. 24 caracteres). Liga `POST /api/reply` para Typebot/Leona |
+
+## Usar por Typebot, Leona ou outra plataforma
+
+Com `API_TOKEN` definido, a plataforma pode chamar o bot por HTTP e ficar responsável por receber e enviar no WhatsApp:
+
+```
+POST /api/reply
+Authorization: Bearer <API_TOKEN>
+{ "text": "entrega no jd ipiranga", "customerId": "5519999990000" }
+→ { "type": "text", "text": "A taxa de entrega ...", "handoff": false }
+```
+
+`handoff: true` indica que um humano deve assumir; o dono é avisado como no canal direto. Hoje há um negócio por servidor (o configurado em `BUSINESS_CONFIG_PATH`).
 
 ## Colocar no ar
 
@@ -59,4 +73,4 @@ Para o dono mudar algo sem mexer no código, aponte `BUSINESS_CONFIG_PATH` para 
 
 ## Testes
 
-`pnpm --filter @app/faq-bot test` (115 testes: horário, webhook, regras, cardápio, Claude simulado, envio).
+`pnpm --filter @app/faq-bot test` (119 testes: horário, webhook, regras, cardápio, Claude simulado, envio).

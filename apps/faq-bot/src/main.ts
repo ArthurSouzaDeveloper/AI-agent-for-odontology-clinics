@@ -22,6 +22,8 @@ const Env = z.object({
   FAQ_MODEL: z.string().default('claude-opus-5-5'),
   /** JSON com a configuração editada pelo dono. Sem ele, usa a configuração embutida. */
   BUSINESS_CONFIG_PATH: z.string().optional(),
+  /** Opcional. Habilita POST /api/reply para Typebot/Leona (header Authorization: Bearer ...). */
+  API_TOKEN: z.string().min(24).optional(),
 });
 
 const env = Env.parse(process.env);
@@ -41,6 +43,7 @@ const app = buildServer({
   config: loadConfig,
   sender,
   seen: new MemorySeenStore(),
+  ...(env.API_TOKEN ? { apiToken: env.API_TOKEN } : {}),
   notifier: new WhatsAppOwnerNotifier(sender, env.META_PHONE_NUMBER_ID, env.OWNER_WHATSAPP),
   ...(env.ANTHROPIC_API_KEY
     ? { llm: new ClaudeFaqAnswerer({ businessName: initial.name, model: env.FAQ_MODEL }) }
