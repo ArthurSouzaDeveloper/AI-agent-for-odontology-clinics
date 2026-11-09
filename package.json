@@ -1,0 +1,16 @@
+{
+  "name": "odonto-agent",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "api:dev": "pnpm --filter @app/scheduling-api dev",
+    "api:migrate": "pnpm --filter @app/scheduling-api migrate"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}
