@@ -10,6 +10,8 @@ export const BusinessConfig = z.object({
   address: z.string().optional(),
   delivery: z.object({ enabled: z.boolean(), fee: z.string().optional(), notes: z.string().optional() }).default({ enabled: false }),
   payment_methods: z.array(z.string()).default([]),
+  /** Ex.: "O pagamento é feito somente na entrega." */
+  payment_note: z.string().optional(),
   menu_url: z.string().url().optional(),
   /** Cardápio estruturado: os preços respondidos vêm daqui, por código. */
   menu: z.array(MenuItemSchema).default([]),
@@ -146,7 +148,7 @@ export class Responder {
 
       case 'payment':
         return this.cfg.payment_methods.length > 0
-          ? { type: 'text', source: 'rule', text: `Aceitamos: ${this.cfg.payment_methods.join(', ')}.` }
+          ? { type: 'text', source: 'rule', text: `${this.cfg.payment_note ? `${this.cfg.payment_note} ` : ''}Aceitamos: ${this.cfg.payment_methods.join(', ')}.` }
           : this.fallback(input.text ?? '', now);
 
       default:

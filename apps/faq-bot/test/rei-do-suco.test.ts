@@ -39,6 +39,22 @@ describe('horário real: quarta a domingo, 18h às 23h30', () => {
   });
 });
 
+describe('dados do negócio informados pelo dono', () => {
+  it('endereço', async () => {
+    expect(await text('onde fica?')).toBe('Estamos em: Praça Luís de Boni, 57 - Jardim Ipiranga, Americana - SP, 13468-579');
+  });
+  it('pagamento só na entrega, com as formas aceitas', async () => {
+    expect(await text('aceitam pix?')).toBe(
+      'O pagamento é feito somente na entrega. Aceitamos: cartão de débito, cartão de crédito, dinheiro, Pix.',
+    );
+  });
+  it('entrega por motoboy próprio, sem inventar taxa', async () => {
+    const t = await text('vocês fazem entrega?');
+    expect(t).toContain('motoboy próprio');
+    expect(t).not.toMatch(/R\$/);
+  });
+});
+
 describe('preços do cardápio', () => {
   it('suco com todas as bases', async () => {
     expect(await text('quanto é o suco de morango?')).toBe(

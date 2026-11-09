@@ -19,7 +19,9 @@ Preço, horário e endereço **nunca** saem do LLM. O texto do modelo ainda pass
 
 `src/tenants/rei-do-suco.ts` (horário de quarta a domingo, 18h às 23h30) e `src/menu.ts` (cardápio R/2026).
 
-**Pendente, não constava nos materiais:** endereço, entrega (taxa e área), formas de pagamento, feriados. Enquanto vazios, o bot encaminha para um humano.
+Já preenchidos pelo dono: horário, endereço, entrega por motoboy próprio e pagamento somente na entrega (débito, crédito, dinheiro e Pix).
+
+**Pendente:** taxa e região de entrega, e feriados. O bot não inventa: encaminha para um humano.
 
 Para o dono mudar algo sem mexer no código, aponte `BUSINESS_CONFIG_PATH` para um JSON no formato de `BusinessConfig` (relido a cada mensagem).
 
