@@ -14,6 +14,9 @@ importers:
 
   apps/faq-bot:
     dependencies:
+      fastify:
+        specifier: ^5.2.0
+        version: 5.12.8
       zod:
         specifier: ^3.24.1
         version: 3.25.76

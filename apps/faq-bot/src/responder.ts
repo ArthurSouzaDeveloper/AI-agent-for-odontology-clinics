@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { MenuItemSchema, type MenuItem } from './menu.ts';
+import { formatLookup, lookupMenu } from './menu-lookup.ts';
 import { BusinessHoursConfig, openStatus, openStatusMessage, weeklySummary } from './hours.ts';
 
 /** Tudo o que o dono edita no painel. Nada disto fica em constante de código. */
@@ -9,6 +11,10 @@ export const BusinessConfig = z.object({
   delivery: z.object({ enabled: z.boolean(), fee: z.string().optional(), notes: z.string().optional() }).default({ enabled: false }),
   payment_methods: z.array(z.string()).default([]),
   menu_url: z.string().url().optional(),
+  /** Cardápio estruturado: os preços respondidos vêm daqui, por código. */
+  menu: z.array(MenuItemSchema).default([]),
+  phones: z.array(z.string()).default([]),
+  instagram: z.string().optional(),
   /** Perguntas e respostas escritas pelo dono. É a ÚNICA fonte para o LLM. */
   faq: z.array(z.object({ question: z.string(), answer: z.string(), keywords: z.array(z.string()).default([]) })).default([]),
 });
@@ -79,6 +85,12 @@ export class Responder {
       if (faqHit) return { type: 'text', source: 'faq', text: faqHit };
     }
 
+    // Perguntas de preço/item: respondidas pela tabela do cardápio.
+    if ((intent === 'menu' || intent === 'unknown') && this.cfg.menu.length > 0 && !input.choiceId) {
+      const found = lookupMenu(this.cfg.menu as MenuItem[], input.text ?? '');
+      if (found) return { type: 'text', source: 'rule', text: formatLookup(found) };
+    }
+
     switch (intent) {
       case 'human':
         return { type: 'handoff', reason: 'customer_request', text: this.handoffText(now) };
@@ -107,6 +119,16 @@ export class Responder {
           : this.fallback(input.text ?? '', now);
 
       case 'menu':
+        // Só o pedido genérico ("cardápio", "menu") ganha o resumo de categorias.
+        // "Quanto é o pastel de dinossauro?" não achou item: vai para um humano
+        // em vez de receber uma resposta que parece ter entendido.
+        if (this.cfg.menu.length > 0 && !this.cfg.menu_url && /\b(cardapio|menu)\b/.test(normalize(input.text ?? ''))) {
+          return {
+            type: 'text',
+            source: 'rule',
+            text: 'Temos sucos, açaí e cupuaçu no copo, pastéis salgados e doces, mini pizzas e bebidas. Me diga o que você procura (por exemplo "suco de morango" ou "pastel de frango") que eu te passo o valor!',
+          };
+        }
         return this.cfg.menu_url
           ? { type: 'text', source: 'rule', text: `Veja nosso cardápio completo e os preços aqui: ${this.cfg.menu_url}` }
           : this.fallback(input.text ?? '', now);
