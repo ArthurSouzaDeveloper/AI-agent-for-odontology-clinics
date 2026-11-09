@@ -1,0 +1,27 @@
+{
+  "name": "@app/scheduling-api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch --experimental-strip-types src/server.ts",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "migrate": "node --experimental-strip-types src/db/migrate.ts",
+    "seed": "node --experimental-strip-types src/db/seed.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@app/contracts": "workspace:*",
+    "fastify": "^5.2.0",
+    "pg": "^8.13.1",
+    "pino": "^9.5.0",
+    "ulid": "^2.3.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/pg": "^8.11.10",
+    "vitest": "^2.1.8"
+  }
+}
