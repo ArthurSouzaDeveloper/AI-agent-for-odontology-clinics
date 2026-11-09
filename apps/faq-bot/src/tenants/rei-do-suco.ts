@@ -1,11 +1,12 @@
 import { BusinessConfig } from '../responder.ts';
 import { MENU } from '../menu.ts';
+import { REI_DO_SUCO_ZONES } from './rei-do-suco-zones.ts';
 
 /**
  * Configuração do Rei do Suco (Americana-SP). Fonte: horário, endereço,
  * entrega e pagamento informados pelo dono; cardápio R/2026 em imagem.
- * Ainda sem dado: taxa de entrega, região atendida e feriados. O bot não
- * inventa: encaminha esses casos para um humano.
+ * Taxas por bairro: tabelas em PDF do dono. Ainda sem dado: feriados. O bot
+ * não inventa: encaminha esses casos para um humano.
  */
 export const reiDoSuco = BusinessConfig.parse({
   name: 'Rei do Suco',
@@ -16,9 +17,8 @@ export const reiDoSuco = BusinessConfig.parse({
     holidays: [],
   },
   address: 'Praça Luís de Boni, 57 - Jardim Ipiranga, Americana - SP, 13468-579',
-  // Entrega feita por motoboy próprio. A taxa e a área não foram informadas:
-  // o bot não cita valor, só confirma que entrega e encaminha o resto.
-  delivery: { enabled: true, notes: 'A entrega é feita por motoboy próprio. Para taxa e região atendida, a equipe confirma com você.' },
+  // Entrega por motoboy próprio, com taxa por bairro (Americana e Santa Bárbara d'Oeste).
+  delivery: { enabled: true, notes: 'A entrega é feita por motoboy próprio.', zones: REI_DO_SUCO_ZONES },
   // Pagamento somente na entrega.
   payment_note: 'O pagamento é feito somente na entrega.',
   payment_methods: ['cartão de débito', 'cartão de crédito', 'dinheiro', 'Pix'],

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { DeliveryZoneSchema, formatDelivery, lookupDelivery } from './delivery.ts';
 import { MenuItemSchema, type MenuItem } from './menu.ts';
 import { formatLookup, lookupMenu } from './menu-lookup.ts';
 import { BusinessHoursConfig, openStatus, openStatusMessage, weeklySummary } from './hours.ts';
@@ -8,7 +9,15 @@ export const BusinessConfig = z.object({
   name: z.string(),
   hours: BusinessHoursConfig,
   address: z.string().optional(),
-  delivery: z.object({ enabled: z.boolean(), fee: z.string().optional(), notes: z.string().optional() }).default({ enabled: false }),
+  delivery: z
+    .object({
+      enabled: z.boolean(),
+      fee: z.string().optional(),
+      notes: z.string().optional(),
+      /** Taxa por bairro. Com a lista preenchida, o bot informa o valor exato. */
+      zones: z.array(DeliveryZoneSchema).default([]),
+    })
+    .default({ enabled: false, zones: [] }),
   payment_methods: z.array(z.string()).default([]),
   /** Ex.: "O pagamento é feito somente na entrega." */
   payment_note: z.string().optional(),
@@ -93,6 +102,22 @@ export class Responder {
       if (found) return { type: 'text', source: 'rule', text: formatLookup(found) };
     }
 
+    // Taxa de entrega por bairro (aceita "jd", "pq", "vl" e a cidade).
+    if (this.cfg.delivery.enabled && this.cfg.delivery.zones.length > 0 && !input.choiceId) {
+      const t = input.text ?? '';
+      const looksLikeNeighborhood =
+        intent === 'delivery' || (intent === 'unknown' && (normalize(t).split(' ').length <= 6 || /\b(jd|jardim|pq|parque|vl|vila|res|residencial)\b/.test(normalize(t))));
+      if (looksLikeNeighborhood) {
+        const found = lookupDelivery(this.cfg.delivery.zones, t);
+        if (found && (intent === 'delivery' || found.kind !== 'not_found')) {
+          const out = formatDelivery(found);
+          return out.handoff
+            ? { type: 'handoff', reason: 'not_in_faq', text: out.text }
+            : { type: 'text', source: 'rule', text: out.text };
+        }
+      }
+    }
+
     switch (intent) {
       case 'human':
         return { type: 'handoff', reason: 'customer_request', text: this.handoffText(now) };
@@ -136,6 +161,13 @@ export class Responder {
           : this.fallback(input.text ?? '', now);
 
       case 'delivery':
+        if (this.cfg.delivery.enabled && this.cfg.delivery.zones.length > 0) {
+          return {
+            type: 'text',
+            source: 'rule',
+            text: "Sim, fazemos entrega com motoboy próprio! Me diga o seu bairro e a cidade (Americana ou Santa Bárbara d'Oeste) que eu te passo a taxa.",
+          };
+        }
         return this.cfg.delivery.enabled
           ? {
               type: 'text',

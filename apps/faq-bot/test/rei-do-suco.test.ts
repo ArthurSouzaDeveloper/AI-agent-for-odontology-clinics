@@ -48,9 +48,10 @@ describe('dados do negócio informados pelo dono', () => {
       'O pagamento é feito somente na entrega. Aceitamos: cartão de débito, cartão de crédito, dinheiro, Pix.',
     );
   });
-  it('entrega por motoboy próprio, sem inventar taxa', async () => {
+  it('entrega por motoboy próprio: pede o bairro em vez de inventar taxa', async () => {
     const t = await text('vocês fazem entrega?');
     expect(t).toContain('motoboy próprio');
+    expect(t).toContain('bairro e a cidade');
     expect(t).not.toMatch(/R\$/);
   });
 });

@@ -21,7 +21,9 @@ Preço, horário e endereço **nunca** saem do LLM. O texto do modelo ainda pass
 
 Já preenchidos pelo dono: horário, endereço, entrega por motoboy próprio e pagamento somente na entrega (débito, crédito, dinheiro e Pix).
 
-**Pendente:** taxa e região de entrega, e feriados. O bot não inventa: encaminha para um humano.
+Taxas de entrega: 117 bairros de Americana e 116 de Santa Bárbara d'Oeste (`src/tenants/rei-do-suco-zones.ts`), com busca por `jd`, `pq` e `vl` (jardim, parque, vila). Se o mesmo nome existe nas duas cidades com valores diferentes, o bot mostra os dois e pergunta a cidade. A chave Pix do rodapé dos PDFs não foi copiada.
+
+**Pendente:** feriados, e o valor do Jardim Mollon (a tabela de Santa Bárbara tem R$ 5 e R$ 6 para o mesmo bairro; enquanto isso o bot chama a equipe). O bot não inventa: encaminha para um humano.
 
 Para o dono mudar algo sem mexer no código, aponte `BUSINESS_CONFIG_PATH` para um JSON no formato de `BusinessConfig` (relido a cada mensagem).
 
