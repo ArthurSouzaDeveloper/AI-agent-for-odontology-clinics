@@ -21,7 +21,7 @@ export const reiDoSuco = BusinessConfig.parse({
   delivery: { enabled: true, notes: 'A entrega é feita por motoboy próprio.', zones: REI_DO_SUCO_ZONES },
   // Pagamento somente na entrega.
   payment_note: 'O pagamento é feito somente na entrega.',
-  payment_methods: ['cartão de débito', 'cartão de crédito', 'dinheiro', 'Pix'],
+  payment_methods: ['cartão de débito', 'cartão de crédito', 'dinheiro'],
   phones: ['(19) 3405-4361', '(19) 99746-1854'],
   instagram: '@oreidosucoamericana',
   menu: MENU,

@@ -2,7 +2,7 @@ import type { DeliveryZone } from '../delivery.ts';
 
 /**
  * Taxas de entrega do Rei do Suco, transcritas das tabelas do dono (PDF
- * "TAXA ENTREGA - AM" e "- SBO"): 117 bairros de Americana e 116 de Santa
+ * "TAXA ENTREGA - AM" e "- SBO"): 117 bairros de Americana e 115 de Santa
  * Bárbara d'Oeste, valores em centavos.
  *
  * Erros de digitação do PDF corrigidos na transcrição: "Jarsim" e "Jardum"
@@ -209,7 +209,6 @@ const SANTA_BARBARA: Array<[string, number]> = [
   ['Santa Inês, Parque', 800],
   ['Europa I, Jardim', 700],
   ['Santa Luzia, Jardim', 1300],
-  ['Fernando Mollon, Jardim', 600],
   ['Santa Rita de Cássia, Jardim', 800],
   ['Frerrarezi, Vila', 600],
   ['Santa Rosa I, Parque', 600],
@@ -253,12 +252,10 @@ const SANTA_BARBARA: Array<[string, number]> = [
 
 /** Variações de grafia e bairros que o dono diz serem o mesmo lugar. */
 const EXTRA: Record<string, { aliases?: string[]; group?: string }> = {
-  // O dono confirmou que "Jardim Ferdinando Mollon" e "Jardim Mollon" são o
-  // mesmo bairro, mas a tabela de Santa Bárbara traz dois valores (Mollon R$ 5
-  // e Fernando Mollon, Jardim R$ 6). Enquanto ele não definir qual vale, o bot
-  // não cita valor para esse bairro e chama um humano.
-  'santa_barbara|Fernando Mollon, Jardim': { aliases: ['ferdinando mollon', 'mollon'], group: 'mollon' },
-  'santa_barbara|Mollon': { aliases: ['fernando mollon', 'ferdinando mollon'], group: 'mollon' },
+  // "Jardim Mollon" e "Jardim Ferdinando Mollon" são o mesmo bairro, e o dono
+  // confirmou a taxa de R$ 5,00. A linha "Fernando Mollon, Jardim R$ 6,00" do
+  // PDF de Santa Bárbara foi removida por estar errada.
+  'santa_barbara|Mollon': { aliases: ['fernando mollon', 'ferdinando mollon'] },
   'americana|Molon': { aliases: ['mollon', 'fernando mollon', 'ferdinando mollon'] },
   'santa_barbara|Frerrarezi, Vila': { aliases: ['ferrarezi'] },
   'santa_barbara|Terrazui, SM': { aliases: ['terrazul'] },

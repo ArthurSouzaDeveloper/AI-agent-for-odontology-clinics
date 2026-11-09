@@ -43,9 +43,14 @@ describe('dados do negócio informados pelo dono', () => {
   it('endereço', async () => {
     expect(await text('onde fica?')).toBe('Estamos em: Praça Luís de Boni, 57 - Jardim Ipiranga, Americana - SP, 13468-579');
   });
-  it('pagamento só na entrega, com as formas aceitas', async () => {
+  it('pagamento só na entrega, com as formas aceitas (sem Pix)', async () => {
+    expect(await text('quais as formas de pagamento?')).toBe(
+      'O pagamento é feito somente na entrega. Aceitamos: cartão de débito, cartão de crédito, dinheiro.',
+    );
+  });
+  it('quem pergunta por Pix ouve que não é aceito', async () => {
     expect(await text('aceitam pix?')).toBe(
-      'O pagamento é feito somente na entrega. Aceitamos: cartão de débito, cartão de crédito, dinheiro, Pix.',
+      'No momento não aceitamos Pix. O pagamento é feito somente na entrega. Aceitamos: cartão de débito, cartão de crédito, dinheiro.',
     );
   });
   it('entrega por motoboy próprio: pede o bairro em vez de inventar taxa', async () => {

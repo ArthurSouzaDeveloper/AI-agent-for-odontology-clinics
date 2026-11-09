@@ -11,7 +11,7 @@ const text = async (q: string) => ((await reply(q)) as { text: string }).text;
 describe('tabela de taxas', () => {
   it('traz todos os bairros dos dois PDFs', () => {
     expect(REI_DO_SUCO_ZONES.filter((z) => z.city === 'americana')).toHaveLength(117);
-    expect(REI_DO_SUCO_ZONES.filter((z) => z.city === 'santa_barbara')).toHaveLength(116);
+    expect(REI_DO_SUCO_ZONES.filter((z) => z.city === 'santa_barbara')).toHaveLength(115);
   });
 
   it('valores âncora conferidos nos PDFs', () => {
@@ -91,22 +91,26 @@ describe('mesmo nome em Americana e Santa Bárbara', () => {
   });
 });
 
-describe('Jardim Mollon e Jardim Ferdinando Mollon são o mesmo bairro', () => {
-  it.each(['entrega jardim mollon', 'entrega jd ferdinando mollon', 'entrega jardim fernando mollon', 'taxa mollon'])(
-    '%s -> não chuta valor, chama a equipe (a tabela tem R$ 5 e R$ 6 para o mesmo lugar)',
-    async (q) => {
-      const rep = await reply(q);
-      expect(rep.type).toBe('handoff');
-      expect((rep as { text: string }).text).not.toMatch(/R\$/);
-      expect((rep as { text: string }).text).toContain('confirmar o valor');
-    },
-  );
+describe('Jardim Mollon e Jardim Ferdinando Mollon são o mesmo bairro (R$ 5,00)', () => {
+  it.each([
+    'entrega jardim mollon',
+    'entrega jd ferdinando mollon',
+    'entrega jardim fernando mollon',
+    'taxa mollon',
+    'entrega jd mollon em santa bárbara',
+  ])('%s -> R$ 5,00', async (q) => {
+    const rep = await reply(q);
+    expect(rep.type).toBe('text');
+    expect((rep as { text: string }).text).toContain('R$ 5,00');
+  });
 
-  it('as duas grafias levam ao mesmo resultado', () => {
+  it('não existe mais a linha divergente de R$ 6,00', () => {
+    expect(REI_DO_SUCO_ZONES.some((z) => z.name.includes('Fernando Mollon'))).toBe(false);
     const a = lookupDelivery(REI_DO_SUCO_ZONES, 'entrega jardim mollon');
     const b = lookupDelivery(REI_DO_SUCO_ZONES, 'entrega jardim ferdinando mollon');
-    expect(a?.kind).toBe('conflict');
-    expect(b?.kind).toBe('conflict');
+    expect(a?.kind).toBe('found');
+    expect(b?.kind).toBe('found');
+    if (a?.kind === 'found' && b?.kind === 'found') expect(a.fee).toBe(b.fee);
   });
 });
 

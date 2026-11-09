@@ -179,6 +179,14 @@ export class Responder {
           : { type: 'text', source: 'rule', text: 'No momento não fazemos entrega. Você pode retirar na loja.' };
 
       case 'payment':
+        // Cliente pergunta por uma forma que o negócio não aceita: diz claramente.
+        if (this.cfg.payment_methods.length > 0 && /\bpix\b/.test(normalize(input.text ?? '')) && !this.cfg.payment_methods.some((m) => /pix/i.test(m))) {
+          return {
+            type: 'text',
+            source: 'rule',
+            text: `No momento não aceitamos Pix. ${this.cfg.payment_note ? `${this.cfg.payment_note} ` : ''}Aceitamos: ${this.cfg.payment_methods.join(', ')}.`,
+          };
+        }
         return this.cfg.payment_methods.length > 0
           ? { type: 'text', source: 'rule', text: `${this.cfg.payment_note ? `${this.cfg.payment_note} ` : ''}Aceitamos: ${this.cfg.payment_methods.join(', ')}.` }
           : this.fallback(input.text ?? '', now);

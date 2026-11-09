@@ -19,11 +19,13 @@ Preço, horário e endereço **nunca** saem do LLM. O texto do modelo ainda pass
 
 `src/tenants/rei-do-suco.ts` (horário de quarta a domingo, 18h às 23h30) e `src/menu.ts` (cardápio R/2026).
 
-Já preenchidos pelo dono: horário, endereço, entrega por motoboy próprio e pagamento somente na entrega (débito, crédito, dinheiro e Pix).
+Já preenchidos pelo dono: horário, endereço, entrega por motoboy próprio e pagamento somente na entrega (débito, crédito e dinheiro; Pix não é aceito).
 
-Taxas de entrega: 117 bairros de Americana e 116 de Santa Bárbara d'Oeste (`src/tenants/rei-do-suco-zones.ts`), com busca por `jd`, `pq` e `vl` (jardim, parque, vila). Se o mesmo nome existe nas duas cidades com valores diferentes, o bot mostra os dois e pergunta a cidade. A chave Pix do rodapé dos PDFs não foi copiada.
+Taxas de entrega: 117 bairros de Americana e 115 de Santa Bárbara d'Oeste (`src/tenants/rei-do-suco-zones.ts`), com busca por `jd`, `pq` e `vl` (jardim, parque, vila). Se o mesmo nome existe nas duas cidades com valores diferentes, o bot mostra os dois e pergunta a cidade. A chave Pix do rodapé dos PDFs não foi copiada.
 
-**Pendente:** feriados, e o valor do Jardim Mollon (a tabela de Santa Bárbara tem R$ 5 e R$ 6 para o mesmo bairro; enquanto isso o bot chama a equipe). O bot não inventa: encaminha para um humano.
+Jardim Mollon e Jardim Ferdinando Mollon são o mesmo bairro, taxa de R$ 5,00 (confirmado pelo dono).
+
+**Pendente:** feriados. O bot não inventa: encaminha para um humano.
 
 Para o dono mudar algo sem mexer no código, aponte `BUSINESS_CONFIG_PATH` para um JSON no formato de `BusinessConfig` (relido a cada mensagem).
 
@@ -57,4 +59,4 @@ Para o dono mudar algo sem mexer no código, aponte `BUSINESS_CONFIG_PATH` para 
 
 ## Testes
 
-`pnpm --filter @app/faq-bot test` (80 testes: horário, webhook, regras, cardápio, Claude simulado, envio).
+`pnpm --filter @app/faq-bot test` (115 testes: horário, webhook, regras, cardápio, Claude simulado, envio).
