@@ -1,0 +1,23 @@
+# Fly.io: `fly launch --no-deploy --copy-config --dockerfile apps/faq-bot/Dockerfile`
+# Depois: fly secrets set META_APP_SECRET=... API_TOKEN=... (veja o README) e `fly deploy`.
+app = "rei-do-suco-bot"
+primary_region = "gru"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[http_service]
+  internal_port = 3002
+  force_https = true
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 1
+
+[[http_service.checks]]
+  path = "/health"
+  interval = "30s"
+  timeout = "5s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"

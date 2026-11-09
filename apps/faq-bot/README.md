@@ -64,6 +64,22 @@ Authorization: Bearer <API_TOKEN>
 4. **Webhook:** no painel da Meta, URL `https://SEU_DOMINIO/webhook`, o `META_VERIFY_TOKEN`, e assinar o campo `messages`.
 5. **Testar** com o número de teste da Meta antes de ligar o número real.
 
+## Subir no Fly.io (passo a passo)
+
+Precisa de uma conta no Fly.io e do `flyctl` instalado. Há `Dockerfile` e `fly.toml` nesta pasta. Na **raiz do repositório**:
+
+```
+fly launch --no-deploy --copy-config --config apps/faq-bot/fly.toml --dockerfile apps/faq-bot/Dockerfile
+fly secrets set API_TOKEN="uma-senha-longa-com-24-ou-mais-caracteres" \
+  META_APP_SECRET=x META_VERIFY_TOKEN=x META_ACCESS_TOKEN=x \
+  META_PHONE_NUMBER_ID=123 OWNER_WHATSAPP=5519999990000
+fly deploy --config apps/faq-bot/fly.toml --dockerfile apps/faq-bot/Dockerfile
+```
+
+O endereço final é `https://NOME-DO-APP.fly.dev`; confira com `curl https://NOME-DO-APP.fly.dev/health`. Se for usar **só** o Leona/Typebot e não a Meta direto, as variáveis `META_*` podem receber qualquer texto de 10+ caracteres (o servidor exige que existam), e `OWNER_WHATSAPP` fica sem uso até o aviso ao dono ser feito pela plataforma. Mantenha **uma** instância (`min_machines_running = 1`): a proteção contra mensagens repetidas fica em memória.
+
+Railway e VPS servem do mesmo jeito: usam o mesmo `Dockerfile`.
+
 ## Limites conhecidos
 
 - **Áudio:** ainda não transcreve; pede que o cliente escreva.
